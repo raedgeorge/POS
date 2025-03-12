@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: pos-server
+
+  data:
+    mongodb:
+      port: 27017
+      database: pos
+      uri: mongodb://localhost
+
+server:
+  port: 7085
+
