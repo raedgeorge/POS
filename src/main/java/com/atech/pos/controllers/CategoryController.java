@@ -10,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RequiredArgsConstructor
 
 @RestController
@@ -18,6 +20,12 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
+    @GetMapping
+    public ResponseEntity<List<CategoryDto>> getCategoriesList(){
+
+        return ResponseEntity.ok(categoryService.getAllCategories());
+    }
+
     @GetMapping("/{categoryId}")
     public ResponseEntity<CategoryDto> getCategoryById(
             @PathVariable @NotBlank(message = "Category Id is required") String categoryId){
@@ -25,7 +33,7 @@ public class CategoryController {
         return ResponseEntity.ok(categoryService.findCategoryById(categoryId));
     }
 
-    @GetMapping
+    @GetMapping("/name")
     public ResponseEntity<CategoryDto> getCategoryByName(
             @RequestParam @NotBlank(message = "Category name is required") String categoryName){
 
@@ -36,7 +44,18 @@ public class CategoryController {
     public ResponseEntity<String> createCategory(@RequestBody @Valid CategoryUpsertDto categoryUpsertDto){
 
         String categoryId = categoryService.createCategory(categoryUpsertDto);
-
         return ResponseEntity.ok(categoryId);
+    }
+
+    @PutMapping
+    public ResponseEntity<CategoryDto> updateCategory(@RequestBody @Valid CategoryUpsertDto categoryUpsertDto){
+
+        return ResponseEntity.ok(categoryService.updateCategory(categoryUpsertDto));
+    }
+
+    @DeleteMapping("/{categoryId}")
+    public ResponseEntity<Boolean> deleteCategory(@PathVariable @NotBlank String categoryId){
+
+        return ResponseEntity.ok(categoryService.deleteCategory(categoryId));
     }
 }
