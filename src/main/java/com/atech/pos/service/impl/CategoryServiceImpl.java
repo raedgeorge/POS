@@ -3,10 +3,12 @@ package com.atech.pos.service.impl;
 import com.atech.pos.dtos.CategoryDto;
 import com.atech.pos.dtos.CategoryUpsertDto;
 import com.atech.pos.entity.Category;
+import com.atech.pos.exceptions.ResourceExistsException;
 import com.atech.pos.mappers.CategoryMapper;
 import com.atech.pos.mappers.CategoryUpsertDtoMapper;
 import com.atech.pos.repository.CategoryRepository;
 import com.atech.pos.service.CategoryService;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -40,6 +42,8 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category category = categoryUpsertDtoMapper.mapToEntity(categoryUpsertDto);
 
+        checkIfCategoryExistsThrowException(categoryUpsertDto.categoryName());
+
         category.setCategoryName(convertEachWorldToFirstLetterUpperCase(category.getCategoryName()));
 
         Category savedCategory = categoryRepository.save(category);
@@ -57,14 +61,32 @@ public class CategoryServiceImpl implements CategoryService {
         return false;
     }
 
+    // *********************** Private methods *********************** \\
+
+    private void checkIfCategoryExistsThrowException(String categoryName) {
+
+        categoryRepository.findByCategoryName(categoryName.trim())
+                .ifPresent(category -> {
+                    throw new ResourceExistsException("Category", "Name", categoryName);
+                });
+    }
+
     private String convertEachWorldToFirstLetterUpperCase(String text){
 
         StringBuilder stringBuilder = new StringBuilder();
 
         String[] strings = text.trim().split(" ");
 
-        for (String str : strings)
+        int index = 0;
+
+        for (String str : strings){
             stringBuilder.append(convertWorldToFirstLetterUpperCase(str));
+
+            if (index != strings.length - 1){
+                stringBuilder.append(" ");
+            }
+            index++;
+        }
 
         return stringBuilder.toString();
     }

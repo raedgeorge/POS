@@ -17,6 +17,7 @@ public class GlobalDomainExceptionHandler {
     public ResponseEntity<ProblemDetail> handleResourceExistsException(Exception exception){
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+        problemDetail.setType(URI.create("Entity"));
         problemDetail.setInstance(URI.create("ResourceExistsException"));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
@@ -26,6 +27,7 @@ public class GlobalDomainExceptionHandler {
     public ResponseEntity<ProblemDetail> handleResourceNotFoundException(Exception exception){
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+        problemDetail.setType(URI.create("Entity"));
         problemDetail.setInstance(URI.create("ResourceNotFoundException"));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
