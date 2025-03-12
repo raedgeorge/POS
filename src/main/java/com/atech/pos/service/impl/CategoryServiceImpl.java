@@ -4,11 +4,11 @@ import com.atech.pos.dtos.CategoryDto;
 import com.atech.pos.dtos.CategoryUpsertDto;
 import com.atech.pos.entity.Category;
 import com.atech.pos.exceptions.ResourceExistsException;
+import com.atech.pos.exceptions.ResourceNotFoundException;
 import com.atech.pos.mappers.CategoryMapper;
 import com.atech.pos.mappers.CategoryUpsertDtoMapper;
 import com.atech.pos.repository.CategoryRepository;
 import com.atech.pos.service.CategoryService;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -29,12 +29,18 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto findCategoryById(String categoryId) {
-        return null;
+
+        return categoryRepository.findById(categoryId)
+                .map(categoryMapper::mapToDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "Id", categoryId));
     }
 
     @Override
     public CategoryDto findCategoryByName(String categoryName) {
-        return null;
+
+        return categoryRepository.findByCategoryNameIgnoreCase(categoryName)
+                .map(categoryMapper::mapToDto)
+                .orElseThrow(() -> new ResourceNotFoundException("Category", "Name", categoryName));
     }
 
     @Override
@@ -65,7 +71,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private void checkIfCategoryExistsThrowException(String categoryName) {
 
-        categoryRepository.findByCategoryName(categoryName.trim())
+        categoryRepository.findByCategoryNameIgnoreCase(categoryName.trim())
                 .ifPresent(category -> {
                     throw new ResourceExistsException("Category", "Name", categoryName);
                 });
