@@ -8,6 +8,10 @@ spring:
       database: pos
       uri: mongodb://localhost
 
+  mvc:
+    problemdetails:
+      enabled: true
+
 server:
   port: 7085
 

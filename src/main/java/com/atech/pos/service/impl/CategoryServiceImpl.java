@@ -8,12 +8,10 @@ import com.atech.pos.mappers.CategoryUpsertDtoMapper;
 import com.atech.pos.repository.CategoryRepository;
 import com.atech.pos.service.CategoryService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
@@ -41,8 +39,6 @@ public class CategoryServiceImpl implements CategoryService {
     public String createCategory(CategoryUpsertDto categoryUpsertDto) {
 
         Category category = categoryUpsertDtoMapper.mapToEntity(categoryUpsertDto);
-
-        log.info("Category {}", category);
 
         category.setCategoryName(convertEachWorldToFirstLetterUpperCase(category.getCategoryName()));
 
