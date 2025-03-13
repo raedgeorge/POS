@@ -10,15 +10,17 @@ import com.atech.pos.service.impl.CategoryServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.verification.VerificationMode;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceImplTest {
@@ -40,7 +42,7 @@ class CategoryServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        category = new Category("Fast Food");
+        category = new Category("fast food");
         categoryDto = new CategoryDto("fast food");
     }
 
@@ -71,7 +73,14 @@ class CategoryServiceImplTest {
 
         String id = categoryService.createCategory(categoryUpsertDto);
 
+        ArgumentCaptor<Category> captor = ArgumentCaptor.forClass(Category.class);
+        verify(categoryRepository).save(captor.capture());
+        Category savedCategory = captor.getValue();
+
+        assertThat(savedCategory.getCategoryName()).isEqualTo("Fast Food");
+
         assertThat(id).isEqualTo(category.getId());
+        verify(categoryRepository, times(1)).save(category);
     }
 
     @Test
