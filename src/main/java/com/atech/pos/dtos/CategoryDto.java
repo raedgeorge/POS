@@ -2,11 +2,14 @@ package com.atech.pos.dtos;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serial;
 import java.io.Serializable;
 
 @Data
+@NoArgsConstructor
+
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CategoryDto implements Serializable {
 
@@ -17,4 +20,8 @@ public class CategoryDto implements Serializable {
     private String categoryName;
     private String creationDate;
     private String lastModified;
+
+    public CategoryDto(String categoryName) {
+        this.categoryName = categoryName;
+    }
 }
