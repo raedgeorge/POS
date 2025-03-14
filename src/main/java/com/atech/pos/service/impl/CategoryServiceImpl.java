@@ -13,10 +13,11 @@ import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
-import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import static com.atech.pos.utils.StringUtils.convertEachWorldToFirstLetterUpperCase;
 
 @Service
 @RequiredArgsConstructor
@@ -96,49 +97,5 @@ public class CategoryServiceImpl implements CategoryService {
                 .ifPresent(category -> {
                     throw new ResourceExistsException("Category", "Name", categoryName);
                 });
-    }
-
-    private String convertEachWorldToFirstLetterUpperCase(String text){
-
-        StringBuilder stringBuilder = new StringBuilder();
-
-        String[] wordsArray = text.trim().split(" ");
-
-        int index = 0;
-
-        for (String str : wordsArray){
-            stringBuilder.append(convertWorldToFirstLetterUpperCase(str));
-
-            if (index != wordsArray.length - 1){
-                stringBuilder.append(" ");
-            }
-            index++;
-        }
-
-        return stringBuilder.toString();
-    }
-
-    private String convertWorldToFirstLetterUpperCase(String text){
-
-        StringBuilder stringBuilder = new StringBuilder();
-
-        String trimmedString = text.trim();
-
-        char firstChar = trimmedString.toUpperCase().charAt(0);
-
-        char[] chars = trimmedString.toLowerCase().toCharArray();
-
-        int index = 0;
-
-        for (char ch : chars){
-            if (index == 0){
-                stringBuilder.append(firstChar);
-                index++;
-            } else {
-                stringBuilder.append(ch);
-            }
-        }
-
-        return stringBuilder.toString();
     }
 }

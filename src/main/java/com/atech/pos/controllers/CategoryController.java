@@ -3,9 +3,11 @@ package com.atech.pos.controllers;
 import com.atech.pos.dtos.CategoryDto;
 import com.atech.pos.dtos.CategoryUpsertDto;
 import com.atech.pos.service.CategoryService;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RequiredArgsConstructor
-
 @RestController
 @RequestMapping(value = "/api/v1/categories", produces = MediaType.APPLICATION_JSON_VALUE)
 public class CategoryController {
@@ -41,9 +42,13 @@ public class CategoryController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createCategory(@RequestBody @Valid CategoryUpsertDto categoryUpsertDto){
+    public ResponseEntity<String> createCategory(@RequestBody @Valid CategoryUpsertDto categoryUpsertDto,
+                                                 HttpServletResponse response){
 
         String categoryId = categoryService.createCategory(categoryUpsertDto);
+
+        response.addHeader(HttpHeaders.LOCATION, "/api/v1/%s".formatted(categoryId));
+
         return ResponseEntity.ok(categoryId);
     }
 
