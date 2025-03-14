@@ -19,7 +19,7 @@ public class PagedProducts extends PageImpl<ProductDto> implements Serializable 
                          @JsonProperty("pageNumber") int pageNumber,
                          @JsonProperty("pageSize") int pageSize,
                          @JsonProperty("numberOfElements") int numberOfElements,
-                         @JsonProperty("totalElements") int totalElements,
+                         @JsonProperty("totalElements") long totalElements,
                          @JsonProperty("totalPages") int totalPages) {
         super(products, PageRequest.of(pageNumber, pageSize), totalElements);
     }

@@ -47,7 +47,7 @@ public class CategoryController {
 
         String categoryId = categoryService.createCategory(categoryUpsertDto);
 
-        response.addHeader(HttpHeaders.LOCATION, "/api/v1/%s".formatted(categoryId));
+        response.addHeader(HttpHeaders.LOCATION, "/api/v1/categories/%s".formatted(categoryId));
 
         return ResponseEntity.ok(categoryId);
     }

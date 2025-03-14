@@ -7,7 +7,7 @@ import com.atech.pos.dtos.ProductUpsertDto;
 
 public interface ProductService {
 
-    PagedProducts getAllProducts(String categoryId, PaginationRequest paginationRequest);
+    PagedProducts getAllProducts(PaginationRequest paginationRequest, String categoryId);
 
     ProductDto findProductById(String productId);
 
