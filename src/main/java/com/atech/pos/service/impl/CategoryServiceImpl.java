@@ -29,6 +29,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryDto> getAllCategories() {
+
         return categoryRepository.findAll()
                 .stream()
                 .map(categoryMapper::mapToDto)
@@ -57,7 +58,9 @@ public class CategoryServiceImpl implements CategoryService {
         checkIfCategoryExistsThrowException(categoryUpsertDto.categoryName());
 
         Category category = categoryUpsertDtoMapper.mapToEntity(categoryUpsertDto);
+        category.setEnteredBy("raed abu sada");
         category.setCategoryName(convertEachWorldToFirstLetterUpperCase(category.getCategoryName()));
+
         Category savedCategory = categoryRepository.save(category);
 
         return savedCategory.getId();
@@ -69,14 +72,18 @@ public class CategoryServiceImpl implements CategoryService {
         if (ObjectUtils.isEmpty(categoryUpsertDto.id()))
             throw new ValidationException("Category Id field is required");
 
-        Category category = categoryRepository.findById(categoryUpsertDto.id())
+        if (!categoryRepository.existsById(categoryUpsertDto.id()))
+            throw new ResourceNotFoundException("Category", "Id", categoryUpsertDto.id());
+
+        checkIfProductToUpdateExistsThrowException(categoryUpsertDto);
+
+        return categoryRepository.findById(categoryUpsertDto.id())
+                .map(category -> {
+                    populateCategoryFromRequestDto(categoryUpsertDto, category);
+                    return categoryRepository.save(category);
+                })
+                .map(categoryMapper::mapToDto)
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "Id", categoryUpsertDto.id()));
-
-        category.setLastModified(LocalDateTime.now());
-        category.setCategoryName(convertEachWorldToFirstLetterUpperCase(categoryUpsertDto.categoryName()));
-        Category updatedCategory = categoryRepository.save(category);
-
-        return categoryMapper.mapToDto(updatedCategory);
     }
 
     @Override
@@ -96,6 +103,23 @@ public class CategoryServiceImpl implements CategoryService {
         categoryRepository.findByCategoryNameIgnoreCase(categoryName.trim())
                 .ifPresent(category -> {
                     throw new ResourceExistsException("Category", "Name", categoryName);
+                });
+    }
+
+    private static void populateCategoryFromRequestDto(CategoryUpsertDto categoryUpsertDto, Category category) {
+
+        category.setModifiedBy("george abu sada");
+        category.setLastModified(LocalDateTime.now());
+        category.setCategoryName(convertEachWorldToFirstLetterUpperCase(categoryUpsertDto.categoryName()));
+    }
+
+    private void checkIfProductToUpdateExistsThrowException(CategoryUpsertDto categoryUpsertDto) {
+
+        categoryRepository.findByCategoryNameIgnoreCase(categoryUpsertDto.categoryName())
+                .ifPresent(category -> {
+                    if (!category.getId().equals(categoryUpsertDto.id()))
+                        throw new IllegalArgumentException(
+                                "Category [%s] already exists".formatted(categoryUpsertDto.categoryName()));
                 });
     }
 }

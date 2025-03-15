@@ -103,22 +103,22 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public ProductDto updateProduct(ProductUpsertDto productUpsertDto) {
 
-        if (ObjectUtils.isEmpty(productUpsertDto.id()))
+        if (ObjectUtils.isEmpty(productUpsertDto.getId()))
             throw new IllegalArgumentException("Product Id field is required");
 
-        if (!productRepository.existsById(productUpsertDto.id()))
-            throw new ResourceNotFoundException("Product", "Id", productUpsertDto.id());
+        if (!productRepository.existsById(productUpsertDto.getId()))
+            throw new ResourceNotFoundException("Product", "Id", productUpsertDto.getId());
 
         checkIfProductToUpdateExistThrowException(productUpsertDto);
 
-        return productRepository.findById(productUpsertDto.id())
+        return productRepository.findById(productUpsertDto.getId())
                 .map(product -> {
                     populateProductFromRequestDto(productUpsertDto, product);
 
                     Product updatedProduct = productRepository.save(product);
                     return productMapper.mapToDto(updatedProduct);
                 })
-                .orElseThrow(() -> new ResourceNotFoundException("Product", "Id", productUpsertDto.id()));
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "Id", productUpsertDto.getId()));
     }
 
     @Override
@@ -136,27 +136,29 @@ public class ProductServiceImpl implements ProductService {
     private void checkIfProductExistThrowException(ProductUpsertDto productUpsertDto) {
 
         productRepository.findByProductNameIgnoreCase(
-                productUpsertDto.productName()).ifPresent(product -> {
-                    throw new ResourceExistsException("Product", "Name", productUpsertDto.productName());
+                productUpsertDto.getProductName()).ifPresent(product -> {
+                    throw new ResourceExistsException("Product", "Name", productUpsertDto.getProductName());
         });
     }
 
     private void checkIfProductToUpdateExistThrowException(ProductUpsertDto productUpsertDto) {
 
-        productRepository.findByProductNameIgnoreCase(productUpsertDto.productName())
+        productRepository.findByProductNameIgnoreCase(productUpsertDto.getProductName())
                 .ifPresent(product -> {
-                    if (!product.getId().equals(productUpsertDto.id()))
+                    if (!product.getId().equals(productUpsertDto.getId()))
                         throw new IllegalArgumentException(
-                                "Product [%s] already exists".formatted(productUpsertDto.productName()));
+                                "Product [%s] already exists".formatted(productUpsertDto.getProductName()));
                 });
     }
 
     private static void populateProductFromRequestDto(ProductUpsertDto productUpsertDto, Product product) {
 
         product.setLastModified(LocalDateTime.now());
-        product.setQuantity(productUpsertDto.quantity());
-        product.setProductPrice(productUpsertDto.productPrice());
-        product.setProductName(convertEachWorldToFirstLetterUpperCase(productUpsertDto.productName()));
+        product.setQuantity(productUpsertDto.getQuantity());
+        product.setProductPrice(productUpsertDto.getProductPrice());
+        product.setSellingPrice(productUpsertDto.getSellingPrice());
+        product.setCategoryId(productUpsertDto.getCategoryId());
+        product.setProductName(convertEachWorldToFirstLetterUpperCase(productUpsertDto.getProductName()));
     }
 
     private static String getOrderByField(String sortBy) {

@@ -18,6 +18,8 @@ public class CategoryDto implements Serializable {
 
     private String id;
     private String categoryName;
+    private String enteredBy;
+    private String modifiedBy;
     private String creationDate;
     private String lastModified;
 
