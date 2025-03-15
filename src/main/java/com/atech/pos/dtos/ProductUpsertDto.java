@@ -10,10 +10,10 @@ public record ProductUpsertDto(
         @NotBlank(message = "Product name is required")
         String productName,
 
-        @Min(value = 0, message = "Product price should be greater than or equal to {value}")
+        @Min(value = 1, message = "Product price should be greater than or equal to {value}")
         double productPrice,
 
-        @Min(value = 1, message = "Product quantity should be greater than {value}")
+        @Min(value = 1, message = "Product quantity should be greater than or equal to {value}")
         int quantity,
 
         @NotBlank(message = "Category Id is required")

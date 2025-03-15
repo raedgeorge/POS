@@ -3,6 +3,7 @@ package com.atech.pos.exceptions.handlers;
 import com.atech.pos.exceptions.ResourceExistsException;
 import com.atech.pos.exceptions.ResourceNotFoundException;
 import jakarta.validation.ValidationException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -12,13 +13,17 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalDomainExceptionHandler {
 
     @ExceptionHandler(value = ResourceExistsException.class)
     public ResponseEntity<ProblemDetail> handleResourceExistsException(ResourceExistsException exception){
+
+        logErrorMessage(ResourceExistsException.class.getName(), exception.getMessage());
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
         problemDetail.setType(URI.create("Entity"));
@@ -29,6 +34,8 @@ public class GlobalDomainExceptionHandler {
 
     @ExceptionHandler(value = ResourceNotFoundException.class)
     public ResponseEntity<ProblemDetail> handleResourceNotFoundException(ResourceNotFoundException exception){
+
+        logErrorMessage(ResourceNotFoundException.class.getName(), exception.getMessage());
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
         problemDetail.setType(URI.create("Entity"));
@@ -43,6 +50,8 @@ public class GlobalDomainExceptionHandler {
     })
     public ResponseEntity<ProblemDetail> handleValidationException(Exception exception){
 
+        logErrorMessage(exception.getClass().getName(), exception.getMessage());
+
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
         problemDetail.setType(URI.create("Entity"));
         problemDetail.setInstance(URI.create("ValidationException"));
@@ -53,16 +62,26 @@ public class GlobalDomainExceptionHandler {
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
     public ResponseEntity<ProblemDetail> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception){
 
-        String errorMessage = exception.getFieldErrors()
-                .stream()
-                .map(DefaultMessageSourceResolvable::getDefaultMessage)
-                .reduce(Objects::toString)
-                .orElse("Validation exception. Unknown error");
+        StringBuilder errorBuilder = new StringBuilder();
 
-        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, errorMessage);
+        exception.getFieldErrors().forEach(fieldError ->
+            errorBuilder.append(fieldError.getField())
+                  .append(": ")
+                  .append(fieldError.getDefaultMessage())
+                  .append(". "));
+
+        String error = errorBuilder.toString().trim();
+
+        logErrorMessage(MethodArgumentNotValidException.class.getName(), error);
+
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, error);
         problemDetail.setType(URI.create("Entity"));
         problemDetail.setInstance(URI.create("MethodArgumentNotValidException"));
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
+    }
+
+    private void logErrorMessage(String exceptionalClass, String message){
+        log.error("Exception: {}, message: {}", exceptionalClass, message);
     }
 }
