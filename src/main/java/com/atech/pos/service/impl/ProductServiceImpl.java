@@ -1,9 +1,6 @@
 package com.atech.pos.service.impl;
 
-import com.atech.pos.dtos.PagedProducts;
-import com.atech.pos.dtos.PaginationRequest;
-import com.atech.pos.dtos.ProductDto;
-import com.atech.pos.dtos.ProductUpsertDto;
+import com.atech.pos.dtos.*;
 import com.atech.pos.entity.Product;
 import com.atech.pos.exceptions.ResourceExistsException;
 import com.atech.pos.exceptions.ResourceNotFoundException;
@@ -18,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -68,20 +66,28 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDto findProductById(String productId) {
-        return productRepository.findById(productId).map(product -> {
 
-            ProductDto productDto = productMapper.mapToDto(product);
+        return productRepository.findById(productId)
+                .map(productMapper::mapToDto)
+                .map(productDto -> {
+                    CategoryDto category = categoryService.findCategoryById(productDto.getCategoryId());
+                    productDto.setCategoryName(category.getCategoryName());
+                    return productDto;
 
-            productDto.setCategoryName(categoryService.findCategoryById(
-                                       product.getCategoryId()).getCategoryName());
-
-            return productDto;
-        }).orElseThrow(() -> new ResourceNotFoundException("Product", "Id", productId));
+                }).orElseThrow(() -> new ResourceNotFoundException("Product", "Id", productId));
     }
 
     @Override
     public ProductDto findProductByName(String productName) {
-        return null;
+
+        return productRepository.findByProductNameIgnoreCase(productName)
+                .map(productMapper::mapToDto)
+                .map(productDto -> {
+                    CategoryDto category = categoryService.findCategoryById(productDto.getCategoryId());
+                    productDto.setCategoryName(category.getCategoryName());
+                    return productDto;
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "Name", productName));
     }
 
     @Override
@@ -98,12 +104,38 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDto updateProduct(ProductUpsertDto productUpsertDto) {
-        return null;
+
+        if (ObjectUtils.isEmpty(productUpsertDto.id()))
+            throw new IllegalArgumentException("Product Id field is required");
+
+        productRepository.findByProductNameIgnoreCase(productUpsertDto.productName())
+                .ifPresent(product -> {
+                    if (!product.getId().equals(productUpsertDto.id()))
+                        throw new IllegalArgumentException(
+                                "Product name [%s] already exists".formatted(productUpsertDto.productName()));
+                });
+
+        return productRepository.findById(productUpsertDto.id())
+                .map(product -> {
+                    product.setQuantity(productUpsertDto.quantity());
+                    product.setProductPrice(productUpsertDto.productPrice());
+                    product.setProductName(convertEachWorldToFirstLetterUpperCase(productUpsertDto.productName()));
+
+                    Product updatedProduct = productRepository.save(product);
+                    return productMapper.mapToDto(updatedProduct);
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "Id", productUpsertDto.id()));
     }
 
     @Override
     public boolean deleteProduct(String productId) {
-        return false;
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "Id", productId));
+
+        productRepository.delete(product);
+
+        return true;
     }
 
     // *********************** Private methods *********************** \\
