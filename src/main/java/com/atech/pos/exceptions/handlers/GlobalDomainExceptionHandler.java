@@ -37,8 +37,11 @@ public class GlobalDomainExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(problemDetail);
     }
 
-    @ExceptionHandler(value = ValidationException.class)
-    public ResponseEntity<ProblemDetail> handleValidationException(ValidationException exception){
+    @ExceptionHandler({
+            ValidationException.class,
+            IllegalArgumentException.class
+    })
+    public ResponseEntity<ProblemDetail> handleValidationException(Exception exception){
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
         problemDetail.setType(URI.create("Entity"));

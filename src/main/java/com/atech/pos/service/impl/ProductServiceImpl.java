@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import java.lang.reflect.Field;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -44,15 +45,12 @@ public class ProductServiceImpl implements ProductService {
                 paginationRequest.pageSize(),
                 Sort.by(Sort.Direction.fromString(paginationRequest.sortDirection()), sortBy)));
 
-        List<ProductDto> productDtos = pagedProducts.getContent().stream().map(product -> {
-
-            ProductDto productDto = productMapper.mapToDto(product);
-
-            productDto.setCategoryName(categoryService.findCategoryById(
-                                       product.getCategoryId()).getCategoryName());
-
-            return productDto;
-        }).toList();
+        List<ProductDto> productDtos = pagedProducts.getContent()
+                .stream()
+                .map(productMapper::mapToDto)
+                .peek(productDto -> productDto.setCategoryName(
+                        categoryService.findCategoryById(productDto.getCategoryId()).getCategoryName()))
+                .toList();
 
         return new PagedProducts(
                 productDtos,
@@ -73,8 +71,8 @@ public class ProductServiceImpl implements ProductService {
                     CategoryDto category = categoryService.findCategoryById(productDto.getCategoryId());
                     productDto.setCategoryName(category.getCategoryName());
                     return productDto;
-
-                }).orElseThrow(() -> new ResourceNotFoundException("Product", "Id", productId));
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("Product", "Id", productId));
     }
 
     @Override
@@ -108,18 +106,14 @@ public class ProductServiceImpl implements ProductService {
         if (ObjectUtils.isEmpty(productUpsertDto.id()))
             throw new IllegalArgumentException("Product Id field is required");
 
-        productRepository.findByProductNameIgnoreCase(productUpsertDto.productName())
-                .ifPresent(product -> {
-                    if (!product.getId().equals(productUpsertDto.id()))
-                        throw new IllegalArgumentException(
-                                "Product name [%s] already exists".formatted(productUpsertDto.productName()));
-                });
+        if (!productRepository.existsById(productUpsertDto.id()))
+            throw new ResourceNotFoundException("Product", "Id", productUpsertDto.id());
+
+        checkIfProductToUpdateExistThrowException(productUpsertDto);
 
         return productRepository.findById(productUpsertDto.id())
                 .map(product -> {
-                    product.setQuantity(productUpsertDto.quantity());
-                    product.setProductPrice(productUpsertDto.productPrice());
-                    product.setProductName(convertEachWorldToFirstLetterUpperCase(productUpsertDto.productName()));
+                    populateProductFromRequestDto(productUpsertDto, product);
 
                     Product updatedProduct = productRepository.save(product);
                     return productMapper.mapToDto(updatedProduct);
@@ -145,6 +139,24 @@ public class ProductServiceImpl implements ProductService {
                 productUpsertDto.productName()).ifPresent(product -> {
                     throw new ResourceExistsException("Product", "Name", productUpsertDto.productName());
         });
+    }
+
+    private void checkIfProductToUpdateExistThrowException(ProductUpsertDto productUpsertDto) {
+
+        productRepository.findByProductNameIgnoreCase(productUpsertDto.productName())
+                .ifPresent(product -> {
+                    if (!product.getId().equals(productUpsertDto.id()))
+                        throw new IllegalArgumentException(
+                                "Product [%s] already exists".formatted(productUpsertDto.productName()));
+                });
+    }
+
+    private static void populateProductFromRequestDto(ProductUpsertDto productUpsertDto, Product product) {
+
+        product.setLastModified(LocalDateTime.now());
+        product.setQuantity(productUpsertDto.quantity());
+        product.setProductPrice(productUpsertDto.productPrice());
+        product.setProductName(convertEachWorldToFirstLetterUpperCase(productUpsertDto.productName()));
     }
 
     private static String getOrderByField(String sortBy) {
