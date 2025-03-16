@@ -24,9 +24,9 @@ public class ProductDto implements Serializable {
     private double sellingPrice;
     private int quantity;
     private double discount;
-    private boolean isTaxable;
+    private boolean taxable;
     private BigDecimal taxRate;
-    private boolean isActive;
+    private boolean active;
     private String categoryId;
     private String categoryName;
     private String supplier;

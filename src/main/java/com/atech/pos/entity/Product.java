@@ -34,13 +34,13 @@ public class Product extends BaseEntity{
     private double discount;
 
     @Field(name = "is_taxable")
-    private boolean isTaxable;
+    private boolean taxable;
 
     @Field(name = "tax_rate")
     private BigDecimal taxRate;
 
     @Field(name = "is_active")
-    private boolean isActive;
+    private boolean active;
 
     @Field(name = "category_id")
     private String categoryId;

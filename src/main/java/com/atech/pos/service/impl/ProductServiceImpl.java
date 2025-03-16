@@ -91,10 +91,13 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public String createProduct(ProductUpsertDto productUpsertDto) {
 
-        checkIfProductExistThrowException(productUpsertDto);
+        checkIfProductExistThrowException(productUpsertDto.getProductName());
+
+        checkIfCategoryNotExistThrowException(productUpsertDto.getCategoryId());
 
         Product product = productUpsertDtoMapper.mapToEntity(productUpsertDto);
         product.setProductName(convertEachWorldToFirstLetterUpperCase(product.getProductName()));
+        product.setEnteredBy("raed george");
         Product savedProduct = productRepository.save(product);
 
         return savedProduct.getId();
@@ -108,6 +111,8 @@ public class ProductServiceImpl implements ProductService {
 
         if (!productRepository.existsById(productUpsertDto.getId()))
             throw new ResourceNotFoundException("Product", "Id", productUpsertDto.getId());
+
+        checkIfCategoryNotExistThrowException(productUpsertDto.getCategoryId());
 
         checkIfProductToUpdateExistThrowException(productUpsertDto);
 
@@ -133,11 +138,11 @@ public class ProductServiceImpl implements ProductService {
     }
 
     // *********************** Private methods *********************** \\
-    private void checkIfProductExistThrowException(ProductUpsertDto productUpsertDto) {
+    private void checkIfProductExistThrowException(String productName) {
 
-        productRepository.findByProductNameIgnoreCase(
-                productUpsertDto.getProductName()).ifPresent(product -> {
-                    throw new ResourceExistsException("Product", "Name", productUpsertDto.getProductName());
+        productRepository.findByProductNameIgnoreCase(productName)
+                .ifPresent(product -> {
+                    throw new ResourceExistsException("Product", "Name", productName);
         });
     }
 
@@ -149,6 +154,12 @@ public class ProductServiceImpl implements ProductService {
                         throw new IllegalArgumentException(
                                 "Product [%s] already exists".formatted(productUpsertDto.getProductName()));
                 });
+    }
+
+    private void checkIfCategoryNotExistThrowException(String categoryId) {
+
+        if (!categoryService.existsById(categoryId))
+            throw new ResourceNotFoundException("Category", "Id", categoryId);
     }
 
     private static void populateProductFromRequestDto(ProductUpsertDto productUpsertDto, Product product) {

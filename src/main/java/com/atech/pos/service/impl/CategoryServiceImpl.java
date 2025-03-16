@@ -102,6 +102,12 @@ public class CategoryServiceImpl implements CategoryService {
         return true;
     }
 
+    @Override
+    public boolean existsById(String categoryId) {
+
+        return categoryRepository.existsById(categoryId);
+    }
+
     // *********************** Private methods *********************** \\
     private void checkIfCategoryExistsThrowException(String categoryName) {
 
