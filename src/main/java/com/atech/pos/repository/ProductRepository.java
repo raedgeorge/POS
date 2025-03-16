@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface ProductRepository extends MongoRepository<Product, String> {
 
     Optional<Product> findByProductNameIgnoreCase(String productName);
+
+    boolean findAllByCategoryId(String categoryId);
 }

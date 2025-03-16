@@ -8,6 +8,7 @@ import com.atech.pos.exceptions.ResourceNotFoundException;
 import com.atech.pos.mappers.CategoryMapper;
 import com.atech.pos.mappers.CategoryUpsertDtoMapper;
 import com.atech.pos.repository.CategoryRepository;
+import com.atech.pos.repository.ProductRepository;
 import com.atech.pos.service.CategoryService;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,8 @@ import static com.atech.pos.utils.StringUtils.convertEachWorldToFirstLetterUpper
 @Service
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
+
+    private final ProductRepository productRepository;
 
     private final CategoryMapper categoryMapper;
     private final CategoryRepository categoryRepository;
@@ -89,6 +92,8 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public boolean deleteCategory(String categoryId) {
 
+        checkIfCategoryHasAssignedProductsThrowException(categoryId);
+
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category", "Id", categoryId));
 
@@ -111,6 +116,14 @@ public class CategoryServiceImpl implements CategoryService {
         category.setModifiedBy("george abu sada");
         category.setLastModified(LocalDateTime.now());
         category.setCategoryName(convertEachWorldToFirstLetterUpperCase(categoryUpsertDto.categoryName()));
+    }
+
+    private void checkIfCategoryHasAssignedProductsThrowException(String categoryId) {
+
+        boolean isCategoryHasProductsAssigned = productRepository.findAllByCategoryId(categoryId);
+
+        if (isCategoryHasProductsAssigned)
+            throw new IllegalArgumentException("Delete failed. Category has products assigned to it");
     }
 
     private void checkIfProductToUpdateExistsThrowException(CategoryUpsertDto categoryUpsertDto) {

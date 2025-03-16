@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @EqualsAndHashCode(callSuper = false)
 
 @Document(collection = "categories")
-public class Category extends BaseEntity{
+public class Category extends BaseEntity {
 
     private String categoryName;
 }
