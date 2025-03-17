@@ -23,6 +23,16 @@ public class ProductController {
 
     private final ProductService productService;
 
+    /**
+     *
+     * @param pageNumber pagination property. pageIndex
+     * @param pageSize pagination property. pageSize
+     * @param sortDirection pagination property. Sort asc | desc
+     * @param sortBy pagination property. sort by field
+     * @param filterText results filtering
+     * @param categoryId categoryId
+     * @return pagination result of Product entity
+     */
     @GetMapping
     public ResponseEntity<PagedProducts> getProductsList(@RequestParam(required = false) Integer pageNumber,
                                                          @RequestParam(required = false) Integer pageSize,
@@ -49,6 +59,12 @@ public class ProductController {
         return ResponseEntity.ok(productService.getAllProducts(paginationRequest, categoryId));
     }
 
+
+    /**
+     *
+     * @param productId requested product ID
+     * @return found ProductDto
+     */
     @GetMapping("/{productId}")
     public ResponseEntity<ProductDto> getProductById(
             @PathVariable @NotBlank(message = "Product Id is required") String productId){
@@ -56,6 +72,13 @@ public class ProductController {
         return ResponseEntity.ok(productService.findProductById(productId));
     }
 
+
+    /**
+     *
+     * @param productUpsertDto request body used to create a new product
+     * @param response add Location Header of created product ID
+     * @return ID of created product
+     */
     @PostMapping
     public ResponseEntity<String> createProduct(@RequestBody @Valid ProductUpsertDto productUpsertDto,
                                                 HttpServletResponse response){
@@ -67,12 +90,24 @@ public class ProductController {
         return ResponseEntity.ok(productId);
     }
 
+
+    /**
+     *
+     * @param productUpsertDto request body used to update a new product
+     * @return updated product Dto
+     */
     @PutMapping
     public ResponseEntity<ProductDto> updateProduct(@RequestBody @Valid ProductUpsertDto productUpsertDto){
 
         return ResponseEntity.ok(productService.updateProduct(productUpsertDto));
     }
 
+
+    /**
+     *
+     * @param productId to delete product ID
+     * @return True if deletion was successful
+     */
     @DeleteMapping("/{productId}")
     public ResponseEntity<Boolean> deleteProduct(
             @PathVariable @NotBlank(message = "Product Id is required") String productId){

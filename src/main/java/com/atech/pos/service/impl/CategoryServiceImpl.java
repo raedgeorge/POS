@@ -75,7 +75,7 @@ public class CategoryServiceImpl implements CategoryService {
         if (ObjectUtils.isEmpty(categoryUpsertDto.id()))
             throw new ValidationException("Category Id field is required");
 
-        if (!categoryRepository.existsById(categoryUpsertDto.id()))
+        if (!categoryExistsById(categoryUpsertDto.id()))
             throw new ResourceNotFoundException("Category", "Id", categoryUpsertDto.id());
 
         checkIfProductToUpdateExistsThrowException(categoryUpsertDto);
@@ -103,7 +103,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public boolean existsById(String categoryId) {
+    public boolean categoryExistsById(String categoryId) {
 
         return categoryRepository.existsById(categoryId);
     }

@@ -10,6 +10,7 @@ import com.atech.pos.repository.ProductRepository;
 import com.atech.pos.service.CategoryService;
 import com.atech.pos.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -38,7 +39,7 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public PagedProducts getAllProducts(PaginationRequest paginationRequest, String categoryId) {
 
-        String sortBy = getOrderByField(paginationRequest.sortBy());
+        String sortBy = getSortByField(paginationRequest.sortBy());
 
         Page<Product> pagedProducts = productRepository.findAll(PageRequest.of(
                 paginationRequest.pageNumber(),
@@ -97,7 +98,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productUpsertDtoMapper.mapToEntity(productUpsertDto);
         product.setProductName(convertEachWorldToFirstLetterUpperCase(product.getProductName()));
-        product.setEnteredBy("raed george");
+        product.setEnteredBy("raed george"); // to be replaced by logged-in user
         Product savedProduct = productRepository.save(product);
 
         return savedProduct.getId();
@@ -158,21 +159,20 @@ public class ProductServiceImpl implements ProductService {
 
     private void checkIfCategoryNotExistThrowException(String categoryId) {
 
-        if (!categoryService.existsById(categoryId))
+        if (!categoryService.categoryExistsById(categoryId))
             throw new ResourceNotFoundException("Category", "Id", categoryId);
     }
 
     private static void populateProductFromRequestDto(ProductUpsertDto productUpsertDto, Product product) {
 
+        BeanUtils.copyProperties(productUpsertDto, product);
+
+        product.setEnteredBy("george raed"); // to be replaced by logged-in user
         product.setLastModified(LocalDateTime.now());
-        product.setQuantity(productUpsertDto.getQuantity());
-        product.setProductPrice(productUpsertDto.getProductPrice());
-        product.setSellingPrice(productUpsertDto.getSellingPrice());
-        product.setCategoryId(productUpsertDto.getCategoryId());
         product.setProductName(convertEachWorldToFirstLetterUpperCase(productUpsertDto.getProductName()));
     }
 
-    private static String getOrderByField(String sortBy) {
+    private static String getSortByField(String sortBy) {
 
         String defaultSortByField = "productName";
 
