@@ -11,3 +11,6 @@ spring:
 server:
   port: 7085
 
+security:
+  secret_key: fg47838ry2378r2ks9210jje87hscbxnz89239gmvzmjsh83948mb049rhdb2y
+  token_expiry: 28800000

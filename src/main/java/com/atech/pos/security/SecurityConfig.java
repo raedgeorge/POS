@@ -1,5 +1,6 @@
 package com.atech.pos.security;
 
+import com.atech.pos.security.filters.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,12 +11,14 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.*;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @RequiredArgsConstructor
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig {
 
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final AuthenticationProvider authenticationProvider;
 
     @Bean
@@ -29,11 +32,12 @@ public class SecurityConfig {
                 authorizationManagerRequestMatcherRegistry
                     .requestMatchers(HttpMethod.POST,"/api/v1/auth/login").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
-                    .requestMatchers("/api/v1/products").authenticated()
-                    .requestMatchers("/api/v1/categories").authenticated()
+                    .requestMatchers("/api/v1/products/**").authenticated()
+                    .requestMatchers("/api/v1/categories/**").authenticated()
                     .anyRequest()
                     .authenticated())
             .authenticationProvider(authenticationProvider)
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .formLogin(AbstractHttpConfigurer::disable)
             .httpBasic(AbstractHttpConfigurer::disable);
 
