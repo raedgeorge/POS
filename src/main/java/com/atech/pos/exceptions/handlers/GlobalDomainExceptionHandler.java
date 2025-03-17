@@ -43,7 +43,8 @@ public class GlobalDomainExceptionHandler {
 
     @ExceptionHandler({
             ValidationException.class,
-            IllegalArgumentException.class
+            IllegalArgumentException.class,
+            SecurityException.class
     })
     public ResponseEntity<ProblemDetail> handleValidationException(Exception exception){
 

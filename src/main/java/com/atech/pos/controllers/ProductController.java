@@ -93,7 +93,7 @@ public class ProductController {
 
     /**
      *
-     * @param productUpsertDto request body used to update a new product
+     * @param productUpsertDto request body used to update a product
      * @return updated product Dto
      */
     @PutMapping
