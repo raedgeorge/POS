@@ -2,10 +2,13 @@ package com.atech.pos.service.impl;
 
 import com.atech.pos.dtos.*;
 import com.atech.pos.entity.AppUser;
+import com.atech.pos.entity.Role;
+import com.atech.pos.entity.RoleType;
 import com.atech.pos.exceptions.ResourceExistsException;
 import com.atech.pos.exceptions.ResourceNotFoundException;
 import com.atech.pos.mappers.AppUserMapper;
 import com.atech.pos.repository.AppUserRepository;
+import com.atech.pos.repository.RolesRepository;
 import com.atech.pos.service.AppUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
@@ -17,11 +20,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import static com.atech.pos.utils.EntityUtils.resolveSortByField;
+import static com.atech.pos.utils.StringUtils.convertEachWorldToFirstLetterUpperCase;
 
 @Service
 @RequiredArgsConstructor
 public class AppUsersServiceImpl implements AppUserService {
 
+    private final RolesRepository rolesRepository;
     private final PasswordEncoder passwordEncoder;
     private final AppUserMapper appUserMapper;
     private final AppUserRepository appUserRepository;
@@ -59,7 +64,10 @@ public class AppUsersServiceImpl implements AppUserService {
 
     @Override
     public AppUserDto findUserById(String userId) {
-        return null;
+
+        return appUserRepository.findById(userId)
+                .map(appUserMapper::mapToDto)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "Id", userId));
     }
 
     @Override
@@ -76,11 +84,16 @@ public class AppUsersServiceImpl implements AppUserService {
         if (appUserRepository.existsAppUsersByUsername(registrationRequestDto.username()))
             throw new ResourceExistsException("User", "Username", registrationRequestDto.username());
 
+        Role role = rolesRepository.findRoleByRoleType(RoleType.Cashier);
+
         AppUser appUser = new AppUser();
         BeanUtils.copyProperties(registrationRequestDto, appUser);
         appUser.setEnabled(true);
         appUser.setExpired(false);
         appUser.setEnteredBy("raed george");
+        appUser.setRole(role);
+        appUser.setFirstName(convertEachWorldToFirstLetterUpperCase(appUser.getFirstName()));
+        appUser.setLastName(convertEachWorldToFirstLetterUpperCase(appUser.getLastName()));
         appUser.setPassword(passwordEncoder.encode(registrationRequestDto.password()));
 
         AppUser savedUser = appUserRepository.save(appUser);

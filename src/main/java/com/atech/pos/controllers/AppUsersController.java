@@ -1,8 +1,10 @@
 package com.atech.pos.controllers;
 
+import com.atech.pos.dtos.AppUserDto;
 import com.atech.pos.dtos.PagedUsers;
 import com.atech.pos.dtos.PaginationRequest;
 import com.atech.pos.service.AppUserService;
+import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,9 +32,17 @@ public class AppUsersController {
         return ResponseEntity.ok(appUserService.getUsersList(paginationRequest));
     }
 
-//    @PutMapping("/{userId}/assign-role")
-//    public ResponseEntity<?> assignRoleToUser(@PathVariable String userId,
-//                                              @RequestBody){
-//
-//    }
+    @GetMapping("/{userId}")
+    public ResponseEntity<AppUserDto> getUserById(
+            @PathVariable @NotBlank(message = "User Id is required") String userId){
+
+        return ResponseEntity.ok(appUserService.findUserById(userId));
+    }
+
+    @GetMapping("/name/{username}")
+    public ResponseEntity<AppUserDto> getUserByUsername(
+            @PathVariable @NotBlank(message = "Username is required") String username){
+
+        return ResponseEntity.ok(appUserService.findUserByUsername(username));
+    }
 }
