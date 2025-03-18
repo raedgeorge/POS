@@ -19,6 +19,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import static com.atech.pos.utils.EntityUtils.resolveSortByField;
 import static com.atech.pos.utils.StringUtils.convertEachWorldToFirstLetterUpperCase;
 
@@ -103,16 +106,58 @@ public class AppUsersServiceImpl implements AppUserService {
 
     @Override
     public boolean changeUsername(ChangeUsernameRequestDto changeUsernameRequestDto) {
-        return false;
+
+        appUserRepository.findAppUserByUsername(changeUsernameRequestDto.newUsername())
+                .ifPresent(appUser -> {
+
+                    if (!appUser.getId().equals(changeUsernameRequestDto.userId()))
+                        throw new ResourceExistsException("User", "Username", changeUsernameRequestDto.newUsername());
+                });
+
+        appUserRepository.findById(changeUsernameRequestDto.userId())
+                .map(appUser -> {
+                    appUser.setUsername(changeUsernameRequestDto.newUsername());
+                    appUser.setModifiedBy("george raed"); // TODO replace by logged user
+                    appUser.setLastModified(LocalDateTime.now());
+                    appUserRepository.save(appUser);
+
+                    return appUser;
+                }).orElseThrow(() -> new ResourceNotFoundException("User", "Id", changeUsernameRequestDto.userId()));
+
+        return true;
     }
 
     @Override
     public boolean changePassword(ChangePasswordRequestDto changePasswordRequestDto) {
-        return false;
+
+        appUserRepository.findById(changePasswordRequestDto.userId())
+                .map(appUser -> {
+                    boolean isCurrentPasswordCorrect = passwordEncoder
+                            .matches(changePasswordRequestDto.currentPassword(), appUser.getPassword());
+
+                    if (isCurrentPasswordCorrect){
+                        appUser.setPassword(passwordEncoder.encode(changePasswordRequestDto.newPassword()));
+                        appUser.setModifiedBy("george raed"); // TODO replace by logged user
+                        appUser.setLastModified(LocalDateTime.now());
+                        appUserRepository.save(appUser);
+                    } else {
+                        throw new IllegalArgumentException("Current password is incorrect");
+                    }
+                    return appUser;
+                })
+                .orElseThrow(() -> new ResourceNotFoundException("User", "Id", changePasswordRequestDto.userId()));
+
+        return true;
     }
 
     @Override
     public String deleteUser(String userId) {
-        return "";
+
+        AppUser user = appUserRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "Id", userId));
+
+        appUserRepository.delete(user);
+
+        return "Deleted";
     }
 }

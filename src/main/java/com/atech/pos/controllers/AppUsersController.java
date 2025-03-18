@@ -1,9 +1,8 @@
 package com.atech.pos.controllers;
 
-import com.atech.pos.dtos.AppUserDto;
-import com.atech.pos.dtos.PagedUsers;
-import com.atech.pos.dtos.PaginationRequest;
+import com.atech.pos.dtos.*;
 import com.atech.pos.service.AppUserService;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -44,5 +43,26 @@ public class AppUsersController {
             @PathVariable @NotBlank(message = "Username is required") String username){
 
         return ResponseEntity.ok(appUserService.findUserByUsername(username));
+    }
+
+    @PutMapping("/change-username")
+    public ResponseEntity<Boolean> changeUsername(
+            @RequestBody @Valid ChangeUsernameRequestDto changeUsernameRequestDto){
+
+        return ResponseEntity.ok(appUserService.changeUsername(changeUsernameRequestDto));
+    }
+
+    @PutMapping("/change-password")
+    public ResponseEntity<Boolean> changePassword(
+            @RequestBody @Valid ChangePasswordRequestDto changePasswordRequestDto){
+
+        return ResponseEntity.ok(appUserService.changePassword(changePasswordRequestDto));
+    }
+
+    @DeleteMapping("/{userId}")
+    public ResponseEntity<String> deleteUser(
+            @PathVariable @NotBlank(message = "User Id is required") String userId){
+
+        return ResponseEntity.ok(appUserService.deleteUser(userId));
     }
 }
