@@ -1,15 +1,10 @@
 package com.atech.pos.service;
 
-import com.atech.pos.dtos.AppUserDto;
-import com.atech.pos.dtos.ChangePasswordRequestDto;
-import com.atech.pos.dtos.ChangeUsernameRequestDto;
-import com.atech.pos.dtos.RegistrationRequestDto;
-
-import java.util.List;
+import com.atech.pos.dtos.*;
 
 public interface AppUserService {
 
-    List<AppUserDto> getUsersList();
+    PagedUsers getUsersList(PaginationRequest paginationRequest);
 
     AppUserDto findUserById(String userId);
 

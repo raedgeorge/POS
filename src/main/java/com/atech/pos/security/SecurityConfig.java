@@ -30,10 +30,11 @@ public class SecurityConfig {
                 httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                 authorizationManagerRequestMatcherRegistry
-                    .requestMatchers(HttpMethod.POST,"/api/v1/auth/login").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
-                    .requestMatchers("/api/v1/products/**").authenticated()
-                    .requestMatchers("/api/v1/categories/**").authenticated()
+                        .requestMatchers(HttpMethod.POST,"/api/v1/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/register").permitAll()
+                        .requestMatchers("/api/v1/products/**").authenticated()
+                        .requestMatchers("/api/v1/categories/**").authenticated()
+                        .requestMatchers("/api/v1/users/**").authenticated()
                     .anyRequest()
                     .authenticated())
             .authenticationProvider(authenticationProvider)

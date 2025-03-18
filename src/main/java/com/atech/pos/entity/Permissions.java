@@ -2,7 +2,7 @@ package com.atech.pos.entity;
 
 public enum Permissions {
 
-    ViewRoles, AssignRoles, AddRole, DeleteRole,
+    ViewRoles, AddRole, DeleteRole, AssignRoles,
 
     ViewUsers, ViewUser, AddUser, EditUser, DeleteUser,
 

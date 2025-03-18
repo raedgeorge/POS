@@ -1,9 +1,6 @@
 package com.atech.pos.service.impl;
 
-import com.atech.pos.dtos.AppUserDto;
-import com.atech.pos.dtos.ChangePasswordRequestDto;
-import com.atech.pos.dtos.ChangeUsernameRequestDto;
-import com.atech.pos.dtos.RegistrationRequestDto;
+import com.atech.pos.dtos.*;
 import com.atech.pos.entity.AppUser;
 import com.atech.pos.exceptions.ResourceExistsException;
 import com.atech.pos.exceptions.ResourceNotFoundException;
@@ -12,10 +9,14 @@ import com.atech.pos.repository.AppUserRepository;
 import com.atech.pos.service.AppUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.ObjectUtils;
 
-import java.util.List;
+import static com.atech.pos.utils.EntityUtils.resolveSortByField;
 
 @Service
 @RequiredArgsConstructor
@@ -25,9 +26,35 @@ public class AppUsersServiceImpl implements AppUserService {
     private final AppUserMapper appUserMapper;
     private final AppUserRepository appUserRepository;
 
+    private static final String DEFAULT_SORT_BY_FIELD = "lastName";
+
     @Override
-    public List<AppUserDto> getUsersList() {
-        return List.of();
+    public PagedUsers getUsersList(PaginationRequest paginationRequest) {
+
+        String sortBy = resolveSortByField(AppUser.class, paginationRequest.getSortBy(), DEFAULT_SORT_BY_FIELD);
+
+        Page<AppUser> page;
+
+        if (!ObjectUtils.isEmpty(paginationRequest.getFilterText())){
+            page = appUserRepository.findAllAppUsersFiltered(PageRequest.of(
+                        paginationRequest.getPageNumber(),
+                        paginationRequest.getPageSize(),
+                        Sort.by(Sort.Direction.fromString(paginationRequest.getSortDirection()), sortBy)),
+                    paginationRequest.getFilterText());
+
+        } else {
+            page = appUserRepository.findAll(PageRequest.of(
+                    paginationRequest.getPageNumber(),
+                    paginationRequest.getPageSize(),
+                    Sort.by(Sort.Direction.fromString(paginationRequest.getSortDirection()), sortBy)));
+        }
+
+        return new PagedUsers(page.getContent().stream().map(appUserMapper::mapToDto).toList(),
+                page.getPageable().getPageNumber(),
+                page.getPageable().getPageSize(),
+                page.getNumberOfElements(),
+                page.getTotalElements(),
+                page.getTotalPages());
     }
 
     @Override

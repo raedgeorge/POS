@@ -18,11 +18,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
-import java.lang.reflect.Field;
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.List;
 
+import static com.atech.pos.utils.EntityUtils.resolveSortByField;
 import static com.atech.pos.utils.StringUtils.convertEachWorldToFirstLetterUpperCase;
 
 @Service
@@ -39,12 +38,12 @@ public class ProductServiceImpl implements ProductService {
     @Transactional
     public PagedProducts getAllProducts(PaginationRequest paginationRequest, String categoryId) {
 
-        String sortBy = getSortByField(paginationRequest.sortBy());
+        String sortBy = resolveSortByField(Product.class, paginationRequest.getSortBy(), "productName");
 
         Page<Product> pagedProducts = productRepository.findAll(PageRequest.of(
-                paginationRequest.pageNumber(),
-                paginationRequest.pageSize(),
-                Sort.by(Sort.Direction.fromString(paginationRequest.sortDirection()), sortBy)));
+                paginationRequest.getPageNumber(),
+                paginationRequest.getPageSize(),
+                Sort.by(Sort.Direction.fromString(paginationRequest.getSortDirection()), sortBy)));
 
         List<ProductDto> productDtos = pagedProducts.getContent()
                 .stream()
@@ -172,16 +171,4 @@ public class ProductServiceImpl implements ProductService {
         product.setProductName(convertEachWorldToFirstLetterUpperCase(productUpsertDto.getProductName()));
     }
 
-    private static String getSortByField(String sortBy) {
-
-        String defaultSortByField = "productName";
-
-        Field[] fields = Product.class.getDeclaredFields();
-
-        List<String> fieldNames = Arrays.stream(fields)
-                .map(Field::getName)
-                .toList();
-
-        return fieldNames.contains(sortBy) ? sortBy : defaultSortByField;
-    }
 }
