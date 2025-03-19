@@ -46,4 +46,12 @@ public class Product extends BaseEntity{
     private String categoryId;
 
     private String supplier;
+
+    public Product(String productName, double productPrice, double sellingPrice, int quantity, String categoryId) {
+        this.productName = productName;
+        this.productPrice = productPrice;
+        this.sellingPrice = sellingPrice;
+        this.quantity = quantity;
+        this.categoryId = categoryId;
+    }
 }

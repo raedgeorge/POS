@@ -34,4 +34,21 @@ public class ProductDto implements Serializable {
     private String modifiedBy;
     private String creationDate;
     private String lastModified;
+
+    public ProductDto(String productName, double productPrice, double sellingPrice, int quantity, String categoryId) {
+        this.productName = productName;
+        this.productPrice = productPrice;
+        this.sellingPrice = sellingPrice;
+        this.quantity = quantity;
+        this.categoryId = categoryId;
+    }
+
+    public ProductDto(String id, String productName, double productPrice, double sellingPrice, int quantity, String categoryId) {
+        this.id = id;
+        this.productName = productName;
+        this.productPrice = productPrice;
+        this.sellingPrice = sellingPrice;
+        this.quantity = quantity;
+        this.categoryId = categoryId;
+    }
 }

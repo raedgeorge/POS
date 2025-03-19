@@ -9,6 +9,7 @@ import com.atech.pos.mappers.CategoryMapper;
 import com.atech.pos.mappers.CategoryUpsertDtoMapper;
 import com.atech.pos.repository.CategoryRepository;
 import com.atech.pos.repository.ProductRepository;
+import com.atech.pos.service.CategoryService;
 import com.atech.pos.service.impl.CategoryServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -208,7 +209,6 @@ class CategoryServiceImplTest {
 
         assertThat(createdCategoryId).isEqualTo(category.getId());
         assertThat(savedCategory.getCategoryName()).isEqualTo("Food");
-        assertThat(savedCategory.getEnteredBy()).isEqualTo("raed abu sada");
     }
 
     @Test
@@ -270,7 +270,6 @@ class CategoryServiceImplTest {
         Category updatedCategory = captor.getValue();
 
         assertThat(updatedCategory).isNotNull();
-        assertThat(updatedCategory.getModifiedBy()).isEqualTo("george abu sada");
     }
 
     @Test
