@@ -20,8 +20,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
+import static com.atech.pos.security.service.AuthenticatedUserService.getAuthenticatedUser;
 import static com.atech.pos.utils.EntityUtils.resolveSortByField;
 import static com.atech.pos.utils.StringUtils.convertEachWorldToFirstLetterUpperCase;
 
@@ -41,21 +41,17 @@ public class AppUsersServiceImpl implements AppUserService {
 
         String sortBy = resolveSortByField(AppUser.class, paginationRequest.getSortBy(), DEFAULT_SORT_BY_FIELD);
 
-        Page<AppUser> page;
-
-        if (!ObjectUtils.isEmpty(paginationRequest.getFilterText())){
-            page = appUserRepository.findAllAppUsersFiltered(PageRequest.of(
+        Page<AppUser> page = ObjectUtils.isEmpty(paginationRequest.getFilterText()) ?
+                appUserRepository.findAll(PageRequest.of(
                         paginationRequest.getPageNumber(),
                         paginationRequest.getPageSize(),
-                        Sort.by(Sort.Direction.fromString(paginationRequest.getSortDirection()), sortBy)),
-                    paginationRequest.getFilterText());
-
-        } else {
-            page = appUserRepository.findAll(PageRequest.of(
-                    paginationRequest.getPageNumber(),
-                    paginationRequest.getPageSize(),
-                    Sort.by(Sort.Direction.fromString(paginationRequest.getSortDirection()), sortBy)));
-        }
+                        Sort.by(Sort.Direction.fromString(paginationRequest.getSortDirection()), sortBy)))
+                :
+                appUserRepository.findAllAppUsersFiltered(PageRequest.of(
+                                paginationRequest.getPageNumber(),
+                                paginationRequest.getPageSize(),
+                                Sort.by(Sort.Direction.fromString(paginationRequest.getSortDirection()), sortBy)),
+                        paginationRequest.getFilterText());
 
         return new PagedUsers(page.getContent().stream().map(appUserMapper::mapToDto).toList(),
                 page.getPageable().getPageNumber(),
@@ -93,7 +89,7 @@ public class AppUsersServiceImpl implements AppUserService {
         BeanUtils.copyProperties(registrationRequestDto, appUser);
         appUser.setEnabled(true);
         appUser.setExpired(false);
-        appUser.setEnteredBy("raed george");
+        appUser.setEnteredBy(getAuthenticatedUser());
         appUser.setRole(role);
         appUser.setFirstName(convertEachWorldToFirstLetterUpperCase(appUser.getFirstName()));
         appUser.setLastName(convertEachWorldToFirstLetterUpperCase(appUser.getLastName()));
@@ -117,7 +113,7 @@ public class AppUsersServiceImpl implements AppUserService {
         appUserRepository.findById(changeUsernameRequestDto.userId())
                 .map(appUser -> {
                     appUser.setUsername(changeUsernameRequestDto.newUsername());
-                    appUser.setModifiedBy("george raed"); // TODO replace by logged user
+                    appUser.setModifiedBy(getAuthenticatedUser());
                     appUser.setLastModified(LocalDateTime.now());
                     appUserRepository.save(appUser);
 
@@ -137,7 +133,7 @@ public class AppUsersServiceImpl implements AppUserService {
 
                     if (isCurrentPasswordCorrect){
                         appUser.setPassword(passwordEncoder.encode(changePasswordRequestDto.newPassword()));
-                        appUser.setModifiedBy("george raed"); // TODO replace by logged user
+                        appUser.setModifiedBy(getAuthenticatedUser());
                         appUser.setLastModified(LocalDateTime.now());
                         appUserRepository.save(appUser);
                     } else {

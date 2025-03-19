@@ -18,6 +18,7 @@ import org.springframework.util.ObjectUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.atech.pos.security.service.AuthenticatedUserService.getAuthenticatedUser;
 import static com.atech.pos.utils.StringUtils.convertEachWorldToFirstLetterUpperCase;
 
 @Service
@@ -61,7 +62,7 @@ public class CategoryServiceImpl implements CategoryService {
         checkIfCategoryExistsThrowException(categoryUpsertDto.categoryName());
 
         Category category = categoryUpsertDtoMapper.mapToEntity(categoryUpsertDto);
-        category.setEnteredBy("raed abu sada");
+        category.setEnteredBy(getAuthenticatedUser());
         category.setCategoryName(convertEachWorldToFirstLetterUpperCase(category.getCategoryName()));
 
         Category savedCategory = categoryRepository.save(category);
@@ -119,7 +120,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     private static void populateCategoryFromRequestDto(CategoryUpsertDto categoryUpsertDto, Category category) {
 
-        category.setModifiedBy("george abu sada");
+        category.setModifiedBy(getAuthenticatedUser());
         category.setLastModified(LocalDateTime.now());
         category.setCategoryName(convertEachWorldToFirstLetterUpperCase(categoryUpsertDto.categoryName()));
     }

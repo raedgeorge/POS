@@ -21,6 +21,7 @@ import org.springframework.util.ObjectUtils;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.atech.pos.security.service.AuthenticatedUserService.getAuthenticatedUser;
 import static com.atech.pos.utils.EntityUtils.resolveSortByField;
 import static com.atech.pos.utils.StringUtils.convertEachWorldToFirstLetterUpperCase;
 
@@ -97,7 +98,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productUpsertDtoMapper.mapToEntity(productUpsertDto);
         product.setProductName(convertEachWorldToFirstLetterUpperCase(product.getProductName()));
-        product.setEnteredBy("raed george"); // to be replaced by logged-in user
+        product.setEnteredBy(getAuthenticatedUser());
         Product savedProduct = productRepository.save(product);
 
         return savedProduct.getId();
@@ -166,7 +167,7 @@ public class ProductServiceImpl implements ProductService {
 
         BeanUtils.copyProperties(productUpsertDto, product);
 
-        product.setEnteredBy("george raed"); // to be replaced by logged-in user
+        product.setEnteredBy(getAuthenticatedUser());
         product.setLastModified(LocalDateTime.now());
         product.setProductName(convertEachWorldToFirstLetterUpperCase(productUpsertDto.getProductName()));
     }
