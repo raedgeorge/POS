@@ -1,10 +1,8 @@
 package com.atech.pos.unit_tests.service;
 
-import com.atech.pos.dtos.CategoryDto;
-import com.atech.pos.dtos.PagedProducts;
-import com.atech.pos.dtos.PaginationRequest;
-import com.atech.pos.dtos.ProductDto;
+import com.atech.pos.dtos.*;
 import com.atech.pos.entity.Product;
+import com.atech.pos.exceptions.ResourceNotFoundException;
 import com.atech.pos.mappers.ProductMapper;
 import com.atech.pos.mappers.ProductUpsertDtoMapper;
 import com.atech.pos.repository.ProductRepository;
@@ -22,10 +20,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -76,12 +75,11 @@ class ProductServiceImplTest {
         productList = List.of(product1, product2);
         productDtoList = List.of(productDto1, productDto2);
 
-        categoryDto = new CategoryDto("category 1");
-        categoryDto.setId(categoryId);
+        categoryDto = new CategoryDto(categoryId,"category 1");
     }
 
     @Test
-    void getAllProducts() {
+    void getAllProducts_shouldReturnPagedProducts() {
 
         // Arrange
         categoryDto.setId(UUID.randomUUID().toString());
@@ -100,7 +98,8 @@ class ProductServiceImplTest {
 
         Page<Product> page = new PageImpl<>(productList, PageRequest.of(0, 10), productList.size());
 
-        when(productRepository.findAll(PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "productName"))))
+        when(productRepository.findAll(PageRequest
+                    .of(0, 10, Sort.by(Sort.Direction.ASC, "productName"))))
                 .thenReturn(page);
 
         // Act
@@ -109,19 +108,82 @@ class ProductServiceImplTest {
         // Assert
         verify(productRepository, times(1)).findAll(any(PageRequest.class));
 
+        assertThat(pagedProducts.getTotalPages()).isEqualTo(1);
         assertThat(pagedProducts.getNumberOfElements()).isEqualTo(2);
+        assertThat(pagedProducts.getContent().get(0)).isEqualTo(productDto1);
     }
 
     @Test
-    void findProductById() {
+    void findProductById_shouldReturnProduct_whenProductIdExists() {
+
+        // Arrange
+        String productId = product1.getId();
+
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product1));
+        when(productMapper.mapToDto(product1)).thenReturn(productDto1);
+        when(categoryService.findCategoryById(categoryId)).thenReturn(categoryDto);
+
+        // Act
+        ProductDto productDto = productService.findProductById(productId);
+
+        // Assert
+        verify(productRepository, times(1)).findById(productId);
+        verify(categoryService, times(1)).findCategoryById(categoryId);
+
+        assertThat(productDto).isNotNull();
+        assertThat(productDto.getProductName()).isEqualTo(product1.getProductName());
+        assertThat(productDto.getCategoryName()).isEqualTo(categoryDto.getCategoryName());
     }
 
     @Test
-    void findProductByName() {
+    void findProductById_shouldThrowException_whenProductIdNotExists() {
+
+        // Arrange
+        String productId = UUID.randomUUID().toString();
+        when(productRepository.findById(productId))
+                .thenThrow(new ResourceNotFoundException("Product", "Id", productId));
+
+        // Act
+        Exception exception = assertThrows(ResourceNotFoundException.class,
+                                () -> productService.findProductById(productId));
+
+        // Assert
+        verify(productMapper, times(0)).mapToDto(product1);
+        verify(productRepository, times(1)).findById(productId);
+
+        assertThat(exception).isNotNull();
+        assertThat(exception).isInstanceOf(ResourceNotFoundException.class);
+        assertThat(exception.getMessage()).isEqualTo("Product not found for Id: %s".formatted(productId));
     }
 
     @Test
-    void createProduct() {
+    void createProduct_shouldCreate_whenProductNotExist() {
+
+        // Arrange
+        ProductUpsertDto productUpsertDto = new ProductUpsertDto(
+                "apples and oranges", 1.99, 2.99, 20, categoryDto.getId());
+
+        when(productRepository.findByProductNameIgnoreCase(productUpsertDto.getProductName()))
+                .thenReturn(Optional.empty());
+
+        when(categoryService.categoryExistsById(categoryDto.getId())).thenReturn(true);
+
+        when(productUpsertDtoMapper.mapToEntity(productUpsertDto)).thenReturn(product1);
+
+        when(productRepository.save(product1)).thenReturn(product1);
+
+        // Act
+        String productId = productService.createProduct(productUpsertDto);
+
+        // Assert
+        verify(productRepository, times(1))
+                .findByProductNameIgnoreCase(productUpsertDto.getProductName());
+
+        verify(productRepository, times(1)).save(product1);
+        verify(productUpsertDtoMapper, times(1)).mapToEntity(productUpsertDto);
+        verify(categoryService, times(1)).categoryExistsById(categoryDto.getId());
+
+        assertThat(productId).isNotNull();
     }
 
     @Test
@@ -129,6 +191,37 @@ class ProductServiceImplTest {
     }
 
     @Test
-    void deleteProduct() {
+    void deleteProduct_shouldDelete_whenProductIdExist() {
+
+        // Arrange
+        String productId = UUID.randomUUID().toString();
+        when(productRepository.findById(productId)).thenReturn(Optional.of(product1));
+
+        // Act
+        boolean result = productService.deleteProduct(productId);
+
+        // Assert
+        verify(productRepository, times(1)).findById(productId);
+
+        assertThat(result).isTrue();
+    }
+
+    @Test
+    void deleteProduct_shouldThrowException_whenProductIdNotExist(){
+
+        // Arrange
+        String productId = UUID.randomUUID().toString();
+        when(productRepository.findById(productId))
+                .thenThrow(new ResourceNotFoundException("Product", "Id", productId));
+
+        // Act
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                                                () -> productService.deleteProduct(productId));
+
+        // Assert
+        verify(productRepository, times(1)).findById(productId);
+
+        assertThat(exception).isNotNull();
+        assertThat(exception.getMessage()).isEqualTo("Product not found for Id: %s".formatted(productId));
     }
 }

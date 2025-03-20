@@ -26,4 +26,9 @@ public class CategoryDto implements Serializable {
     public CategoryDto(String categoryName) {
         this.categoryName = categoryName;
     }
+
+    public CategoryDto(String id, String categoryName) {
+        this.id = id;
+        this.categoryName = categoryName;
+    }
 }
