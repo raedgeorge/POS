@@ -41,8 +41,8 @@ public class ProductController {
                                                          @RequestParam(required = false) String filterText,
                                                          @RequestParam(required = false) String categoryId){
 
-        PaginationRequest paginationRequest = getPaginationRequest(
-                pageNumber, pageSize, sortDirection, sortBy, filterText);
+        PaginationRequest paginationRequest =
+                getPaginationRequest(pageNumber, pageSize, sortDirection, sortBy, filterText);
 
         return ResponseEntity.ok(productService.getAllProducts(paginationRequest, categoryId));
     }

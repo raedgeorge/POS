@@ -35,11 +35,13 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
     private final ProductUpsertDtoMapper productUpsertDtoMapper;
 
+    private static final String DEFAULT_SORT_BY_FIELD = "productName";
+
     @Override
     @Transactional
     public PagedProducts getAllProducts(PaginationRequest paginationRequest, String categoryId) {
 
-        String sortBy = resolveSortByField(Product.class, paginationRequest.getSortBy(), "productName");
+        String sortBy = resolveSortByField(Product.class, paginationRequest.getSortBy(), DEFAULT_SORT_BY_FIELD);
 
         Page<Product> pagedProducts = productRepository.findAll(PageRequest.of(
                 paginationRequest.getPageNumber(),

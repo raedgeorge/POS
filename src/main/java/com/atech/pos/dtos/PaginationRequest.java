@@ -19,6 +19,8 @@ public class PaginationRequest {
 
     private static final Integer DEFAULT_PAGE_NUMBER = 0;
     private static final Integer DEFAULT_PAGE_SIZE = 10;
+    private static final String ASCENDING = "ASC";
+    private static final String DESCENDING = "DESC";
 
     public static PaginationRequest getPaginationRequest(Integer pageNumber,
                                                          Integer pageSize,
@@ -32,21 +34,18 @@ public class PaginationRequest {
         if (pageSize == null || pageSize <= 0)
             pageSize = DEFAULT_PAGE_SIZE;
 
-        if (ObjectUtils.isEmpty(sortDirection) ||
-            !(sortDirection.equalsIgnoreCase("ASC") || sortDirection.equalsIgnoreCase("DESC"))) {
-
-            sortDirection = Sort.Direction.DESC.name();
-
+        if (sortDirection.equalsIgnoreCase(ASCENDING)) {
+            sortDirection = Sort.Direction.ASC.name();
         } else {
-            sortDirection = sortDirection.toLowerCase();
+            sortDirection = Sort.Direction.DESC.name();
         }
 
         return PaginationRequest.builder()
-                .pageNumber(pageNumber)
-                .pageSize(pageSize)
-                .sortDirection(sortDirection)
                 .sortBy(sortBy)
+                .pageSize(pageSize)
+                .pageNumber(pageNumber)
                 .filterText(filterText)
+                .sortDirection(sortDirection)
                 .build();
     }
 
