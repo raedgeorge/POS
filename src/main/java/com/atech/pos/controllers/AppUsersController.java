@@ -25,8 +25,8 @@ public class AppUsersController {
                                                    @RequestParam(required = false) String sortBy,
                                                    @RequestParam(required = false) String filterText) {
 
-        PaginationRequest paginationRequest = getPaginationRequest(
-                pageNumber, pageSize, sortDirection, sortBy, filterText);
+        PaginationRequest paginationRequest =
+                getPaginationRequest(pageNumber, pageSize, sortDirection, sortBy, filterText);
 
         return ResponseEntity.ok(appUserService.getUsersList(paginationRequest));
     }
