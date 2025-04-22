@@ -3,7 +3,6 @@ package com.atech.pos.service.impl;
 import com.atech.pos.dtos.*;
 import com.atech.pos.entity.AppUser;
 import com.atech.pos.entity.Role;
-import com.atech.pos.entity.RoleType;
 import com.atech.pos.exceptions.ResourceExistsException;
 import com.atech.pos.exceptions.ResourceNotFoundException;
 import com.atech.pos.mappers.AppUserMapper;
@@ -83,7 +82,8 @@ public class AppUsersServiceImpl implements AppUserService {
         if (appUserRepository.existsAppUsersByUsername(registrationRequestDto.username()))
             throw new ResourceExistsException("User", "Username", registrationRequestDto.username());
 
-        Role role = rolesRepository.findRoleByRoleType(RoleType.Cashier);
+        // TODO fixed hardcoded role name
+        Role role = rolesRepository.findRoleByName("role");
 
         AppUser appUser = new AppUser();
         BeanUtils.copyProperties(registrationRequestDto, appUser);

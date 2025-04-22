@@ -31,6 +31,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorizationManagerRequestMatcherRegistry ->
                 authorizationManagerRequestMatcherRegistry
                         .requestMatchers(HttpMethod.POST,"/api/v1/auth/**").permitAll()
+                        .requestMatchers("/api/v1/roles/**").permitAll()
                         .requestMatchers("/api/v1/products/**").authenticated()
                         .requestMatchers("/api/v1/categories/**").authenticated()
                         .requestMatchers("/api/v1/users/**").authenticated()

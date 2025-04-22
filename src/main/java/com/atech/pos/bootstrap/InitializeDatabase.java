@@ -3,7 +3,6 @@ package com.atech.pos.bootstrap;
 import com.atech.pos.entity.AppUser;
 import com.atech.pos.entity.Permissions;
 import com.atech.pos.entity.Role;
-import com.atech.pos.entity.RoleType;
 import com.atech.pos.repository.AppUserRepository;
 import com.atech.pos.repository.RolesRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +14,8 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static com.atech.pos.utils.AppConstants.*;
 
 @Slf4j
 @Component
@@ -37,9 +38,9 @@ public class InitializeDatabase implements CommandLineRunner {
 
         if (rolesRepository.count() == 0){
 
-            Role roleAdmin = new Role(RoleType.Admin, loadAdminPermissions());
-            Role roleManager = new Role(RoleType.Manager, loadAdminPermissions());
-            Role roleCashier = new Role(RoleType.Cashier, loadCashierPermissions());
+            Role roleAdmin = new Role(ROLE_ADMIN, populateAdminPermissions());
+            Role roleManager = new Role(ROLE_MANAGER, populateAdminPermissions());
+            Role roleCashier = new Role(ROLE_CASHIER, populateCashierPermissions());
 
             rolesRepository.saveAll(List.of(roleAdmin, roleManager, roleCashier));
 
@@ -61,7 +62,7 @@ public class InitializeDatabase implements CommandLineRunner {
 
             Optional<Role> optionalRole = rolesRepository.findAll()
                     .stream()
-                    .filter(role -> role.getRoleType().equals(RoleType.Admin))
+                    .filter(role -> role.getName().equals(ROLE_ADMIN))
                     .findFirst();
 
             if (optionalRole.isPresent()){
@@ -75,7 +76,7 @@ public class InitializeDatabase implements CommandLineRunner {
         }
     }
 
-    private static List<Permissions> loadAdminPermissions() {
+    private static List<Permissions> populateAdminPermissions() {
 
         return new ArrayList<>(
                 List.of(Permissions.AddUser, Permissions.EditUser,
@@ -91,7 +92,7 @@ public class InitializeDatabase implements CommandLineRunner {
                         Permissions.DeleteRole, Permissions.AddRole));
     }
 
-    private static List<Permissions> loadCashierPermissions() {
+    private static List<Permissions> populateCashierPermissions() {
 
         return new ArrayList<>(
                 List.of(Permissions.EditUser,

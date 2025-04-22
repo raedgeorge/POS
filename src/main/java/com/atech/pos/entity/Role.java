@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.util.List;
 
@@ -15,8 +14,7 @@ import java.util.List;
 @Document(collection = "roles")
 public class Role extends BaseEntity {
 
-    @Field(name = "role_type")
-    private RoleType roleType;
+    private String name;
 
     private List<Permissions> permissions;
 }

@@ -29,7 +29,7 @@ public class JwtTokenServiceImpl implements JwtTokenService{
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("name", appUser.getFirstName() + " " + appUser.getLastName());
-        claims.put("role", appUser.getRole().getRoleType().name());
+        claims.put("role", appUser.getRole().getName());
         claims.put("permissions", appUser.getRole().getPermissions());
 
         return Jwts.builder()
